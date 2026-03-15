@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
+CODENAME=$(lsb_release -cs)
+echo "Detected Ubuntu codename: $CODENAME"
 # Install pca9685 driver
 #
 

@@ -1,4 +1,6 @@
 #!/bin/bash
+CODENAME=$(lsb_release -cs)
+echo "Detected Ubuntu codename: $CODENAME"
 
 set -e
 
@@ -110,7 +112,12 @@ if ! dpkg -l | grep -q "linux-headers-${KERNEL_VERSION}"; then
 fi
 
 ### Install system components
-$BASEDIR/prepare_dkms.sh
+if [ "$CODENAME" != "noble" ]; then
+  echo "Running prepare_dkms.sh (skipping on Noble)"
+  $BASEDIR/prepare_dkms.sh
+else
+  echo "Skipping DKMS on Ubuntu Noble"
+fi
 if [ "$MACHINE" == "x86_64" ]
 then
     COMPONENTS=(System)
@@ -243,3 +250,22 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 # if ! grep -q "mpg123 -a" /etc/rc.local; then
 #     sudo sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" /etc/rc.local
 # fi
+
+# -- BEGIN nvram compatibility patch (applied at install time) --
+if [ -f "Python_Module/MangDang/mini_pupper/nvram.py" ]; then
+  echo "Applying nvram runtime compatibility fixes..."
+  python3 - <<'PY'
+import io,sys,re
+p="Python_Module/MangDang/mini_pupper/nvram.py"
+s=open(p,"r",encoding="utf-8").read()
+# conservative replacement: replace lone "import smbus" with try/except import
+if "import smbus" in s and "import smbus2" not in s:
+    s=s.replace("import smbus", "try:\\n    import smbus\\nexcept Exception:\\n    import smbus2 as smbus")
+    open(p,"w",encoding="utf-8").write(s)
+    print("nvram.py patched: import smbus -> try/except")
+else:
+    print("nvram.py: no patch needed")
+PY
+fi
+# -- END nvram compatibility patch --
+

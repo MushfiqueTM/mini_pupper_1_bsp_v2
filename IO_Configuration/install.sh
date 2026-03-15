@@ -1,4 +1,6 @@
 #!/bin/bash
+CODENAME=$(lsb_release -cs)
+echo "Detected Ubuntu codename: $CODENAME"
 
 UBUNTU_CODENAME=${UBUNTU_CODENAME:-$(lsb_release -cs)}
 if [ "$UBUNTU_CODENAME" == "jammy" ] || [ "$UBUNTU_CODENAME" == "noble" ]; then
