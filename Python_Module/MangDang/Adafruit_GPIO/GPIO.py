@@ -414,11 +414,8 @@ def get_platform_gpio(**keywords):
     """
     plat = Platform.platform_detect()
     if plat == Platform.RASPBERRY_PI:
-        try:
-            import RPi.GPIO
-            return RPiGPIOAdapter(RPi.GPIO, **keywords)
-        except ImportError:
-            raise NotImplementedError('RPi.GPIO is not available. Ensure it is installed or use an alternative library (e.g. lgpio).')
+        import RPi.GPIO
+        return RPiGPIOAdapter(RPi.GPIO, **keywords)
     elif plat == Platform.BEAGLEBONE_BLACK:
         import Adafruit_BBIO.GPIO
         return AdafruitBBIOAdapter(Adafruit_BBIO.GPIO, **keywords)
